@@ -4,11 +4,23 @@
   <img src="assets/vplay.jpg" width="160" alt="vplay logo">
 </p>
 
-`vplay` is an advanced CLI video player with a TUI interface for macOS.
+<p align="center">
+  <a href="https://github.com/rztrace/vplay/releases/latest"><img alt="latest release" src="https://img.shields.io/github/v/release/rztrace/vplay?include_prereleases&label=release"></a>
+  <a href="https://github.com/rztrace/vplay/blob/main/Formula/vplay.rb"><img alt="Homebrew tap" src="https://img.shields.io/badge/Homebrew-rztrace%2Fvplay-fbbf24"></a>
+  <img alt="macOS" src="https://img.shields.io/badge/macOS-required-fbbf24">
+</p>
 
-It allows queuing files, setting portions to play, organizing video collections, and, crucially, playing different videos on several screens or displays simultaneously while controlling everything from a single terminal interface.
+`vplay` is a macOS terminal video player for controlling local videos, playlists, clips, downloads, and multiple displays from one TUI.
 
-It is lightweight, terminal-native, and built around add-ons and modules that can be added or scripted to enhance functionality.
+Use it as a multi-monitor mpv controller, a terminal playlist manager, or a lightweight way to play different videos on different screens at the same time.
+
+[Website](https://vplay.rztrace.com/) · [Latest release](https://github.com/rztrace/vplay/releases/latest) · [Discussions](https://github.com/rztrace/vplay/discussions)
+
+```sh
+brew tap rztrace/vplay https://github.com/rztrace/vplay
+brew install vplay
+vplay
+```
 
 ## Features
 
@@ -20,6 +32,13 @@ It is lightweight, terminal-native, and built around add-ons and modules that ca
 - Control per-screen playback, volume, mute, loop mode, play-next behavior, and position.
 - Extend behavior with system modules or user modules.
 - Run optional downloads through `yt-dlp`.
+
+## Good Fit
+
+- You use a Mac with more than one display.
+- You want mpv control without switching out of the terminal.
+- You need playlists, renamed files, clipped playback portions, or download queues.
+- You want a scriptable TUI that can grow through modules instead of a full media-center app.
 
 ## Requirements
 
