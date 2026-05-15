@@ -22,14 +22,14 @@ esac
 rm -rf "$root/build" "$root/dist"
 "$python" -m PyInstaller \
   --clean \
-  --onefile \
+  --onedir \
   --name vplay \
   --collect-submodules vplay.modules \
   --add-data "$root/vplay/mpv/vplay.lua:vplay/mpv" \
   "$root/packaging/portable/launcher.py"
 
 asset="vplay-macos-${asset_arch}.tar.gz"
-tar -C "$root/dist" -czf "$root/dist/$asset" vplay
+tar -C "$root/dist/vplay" -czf "$root/dist/$asset" vplay _internal
 shasum -a 256 "$root/dist/$asset" > "$root/dist/$asset.sha256"
 
 echo "$root/dist/$asset"

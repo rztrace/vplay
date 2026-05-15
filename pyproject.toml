@@ -1,6 +1,6 @@
 [project]
 name = "vplay"
-version = "1.1.0b2"
+version = "1.1.0b3"
 description = "Advanced macOS CLI video player with a TUI interface."
 requires-python = ">=3.9"
 dependencies = ["textual>=0.50"]

@@ -57,7 +57,7 @@ chmod +x vplay
 ./vplay
 ```
 
-The portable binary uses the folder it is stored in as its default video folder. This is intentional so it can be dropped into a media directory and run without setup.
+The archive unpacks `vplay` plus its `_internal` runtime folder. Keep them together. The portable binary uses the folder it is stored in as its default video folder, so it can be unpacked into a media directory and run without setup.
 
 ## Install From Source
 
