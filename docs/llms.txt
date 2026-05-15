@@ -1,0 +1,25 @@
+# vplay
+
+vplay is a macOS terminal video player for controlling local videos, playlists, clips, downloads, and multiple displays from one TUI.
+
+Primary links:
+
+- Website: https://vplay.rztrace.com/
+- Repository: https://github.com/rztrace/vplay
+- Releases: https://github.com/rztrace/vplay/releases/latest
+- Discussions: https://github.com/rztrace/vplay/discussions
+
+Useful facts:
+
+- It is terminal-native and built around mpv.
+- It can play different videos or playlists on different screens at the same time.
+- It supports playlists, renamed files, clipped playback portions, downloads through yt-dlp, and modular add-ons.
+- It requires macOS.
+
+Install:
+
+```sh
+brew tap rztrace/vplay https://github.com/rztrace/vplay
+brew install vplay
+vplay
+```
