@@ -1,42 +1,57 @@
 # vplay
 
-`vplay` is a reorganized copy of the fish `vplay` program. It keeps the same basic workflow:
+`vplay` is an advanced CLI video player with a TUI interface for macOS.
 
-- scan a video folder,
-- build and persist a playlist,
-- launch/control `mpv` through JSON IPC,
-- show a Textual TUI,
-- store display renames and playback chunks,
-- download new videos through `yt-dlp`.
+It can queue files, play selected portions of videos, organize local video collections, and, crucially, play different videos on several screens or displays simultaneously while controlling everything from a single terminal interface.
 
-The original live files are untouched:
+The goal is a lightweight, robust system that stays fast in the terminal while remaining extensible through add-ons and modules.
 
-- `/Users/razdawson/.config/fish/config.fish`
-- `/Users/razdawson/.config/fish/vplay_tui.py`
-- `/Users/razdawson/.config/fish/vplay.lua`
+## Features
+
+- Terminal-native TUI for browsing and controlling video collections.
+- Queue videos into playlists and control playback from one interface.
+- Save custom display names for files.
+- Mark and replay specific portions of videos.
+- Route playback to available macOS displays.
+- Play multiple videos or playlists on different screens at the same time.
+- Control per-screen playback, volume, mute, loop mode, play-next behavior, and position.
+- Add system or user modules to extend the interface and behavior.
+- Optional download queue through `yt-dlp`.
+
+## Requirements
+
+- macOS
+- Python 3.9+
+- `mpv`
+- `yt-dlp` for download features
+
+## Install
+
+```fish
+git clone https://github.com/rztrace/vplay.git
+cd vplay
+python3 -m venv .venv
+.venv/bin/python -m pip install -e .
+```
 
 ## Run
 
 ```fish
-cd vplay
-python3 -m venv .venv
-.venv/bin/python -m pip install -e .
 .venv/bin/vplay
 ```
 
-Or source the fish wrapper in `fish/vplay.fish`.
+For fish users, source the helper:
 
-## Layout
+```fish
+source fish/vplay.fish
+vplay
+```
 
-- `vplay/app.py` - Textual app and UI orchestration.
-- `vplay/config.py` - paths, themes, runtime locations, defaults.
-- `vplay/state.py` - atomic JSON persistence and legacy-state import.
-- `vplay/media.py` - video scanning, filename formatting, cached ffprobe metadata.
-- `vplay/mpv.py` - mpv process lifecycle and JSON IPC.
-- `vplay/downloads.py` - yt-dlp download queue.
-- `vplay/commands.py` - command-mode parsing helpers.
-- `vplay/displays.py` - live macOS display discovery for screen routing.
-- `vplay/ui/screens.py` - reusable modal screens.
-- `vplay/modules/system` - core/system pane, enhancer, and settings module specs.
-- `vplay/modules/user` - user module drop-ins.
-- `vplay/mpv/vplay.lua` - mpv overlay and key bindings.
+## Modules
+
+Modules live in `vplay/modules`.
+
+- `vplay/modules/system` contains modules that integrate with core playback, settings, layout, or mpv behavior.
+- `vplay/modules/user` is for lightweight add-ons that can be added as simple Python files.
+
+Add-ons can provide panes, settings, or behavior enhancements. See `docs/modules.md` for the module shape.
