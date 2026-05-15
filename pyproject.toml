@@ -1,7 +1,7 @@
 [project]
 name = "vplay"
 version = "1.1.0b0"
-description = "Modular Textual/mpv playlist player derived from the fish vplay helper."
+description = "Advanced macOS CLI video player with a TUI interface."
 requires-python = ">=3.9"
 dependencies = ["textual>=0.50"]
 

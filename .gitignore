@@ -3,5 +3,7 @@ __pycache__/
 *.pyc
 *.egg-info/
 build/
+dist/
+*.spec
 .DS_Store
 AGENTS.md

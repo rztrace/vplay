@@ -32,6 +32,8 @@ from .ui.screens import (
     AboutScreen,
     ConfirmScreen,
     DownloadQueueScreen,
+    DirectoryPickerScreen,
+    FolderSetupScreen,
     HelpScreen,
     MemoryAction,
     ModuleEditorScreen,
@@ -116,7 +118,8 @@ class VideoPlayerApp(App):
         self.registry = ModuleRegistry.discover()
         self.module_layout = ModuleLayout.from_dict(self.state.settings.module_layout, self.registry)
         self.module_hooks = self.registry.active_hooks(self.module_layout)
-        self.video_dir = expand_path(self.state.settings.video_dir)
+        self.video_dir = self._resolve_video_dir()
+        self._folder_prompt_open = False
         self.all_files: List[str] = []
         self.filtered_files: List[str] = []
         self.current_file: Optional[str] = None
@@ -134,7 +137,7 @@ class VideoPlayerApp(App):
         self.metadata = MetadataCache()
         self.metadata_requested: set[str] = set()
         self.mpv = MpvController(self.config)
-        self.updates = UpdateManager(Path(__file__).resolve().parents[1])
+        self.updates = UpdateManager(Path(__file__).resolve().parents[1], self.config.install_method)
         self.downloads = DownloadManager(self._video_dir, self._download_update, self._download_done)
         self.progress_timer: Optional[Timer] = None
         self.sync_timer: Optional[Timer] = None
@@ -216,6 +219,8 @@ class VideoPlayerApp(App):
         self.query_one("#lib-list", ListView).focus()
         self.progress_timer = self.set_interval(0.5, self._sync_progress)
         self.sync_timer = self.set_interval(2.0, self._sync_full)
+        if not self.video_dir.exists():
+            self.call_after_refresh(self._open_missing_video_dir)
 
     def on_unmount(self) -> None:
         self.metadata.close()
@@ -225,6 +230,11 @@ class VideoPlayerApp(App):
 
     def _video_dir(self) -> Path:
         return self.video_dir
+
+    def _resolve_video_dir(self) -> Path:
+        if self.state.settings.video_dir_mode == "cwd":
+            return Path.cwd().resolve()
+        return expand_path(self.state.settings.video_dir)
 
     @property
     def playlist(self) -> List[str]:
@@ -1343,10 +1353,10 @@ class VideoPlayerApp(App):
             if parsed.verb == "w":
                 self._save_state()
                 self.notify("Saved")
-            elif parsed.verb == "fish":
+            elif parsed.verb == "shell":
                 self._open_shell()
             elif parsed.verb == "help":
-                self.notify("Commands: set, unset, status, w, q, fish")
+                self.notify("Commands: set, unset, status, w, q, shell")
             elif parsed.verb == "status":
                 self._command_status(parsed.key)
             elif parsed.verb == "unset":
@@ -1444,7 +1454,9 @@ class VideoPlayerApp(App):
             elif action == "module_settings:screens":
                 self.push_screen(ScreenPickerScreen(self.state.settings.screen, self._screen_choices()), self._apply_default_screen)
             elif action == "folder":
-                self.push_screen(TextInputScreen("Video folder", self._home_relative(self.video_dir)), self._apply_folder)
+                self._open_folder_picker(self.video_dir)
+            elif action == "folder_mode":
+                self._toggle_video_folder_mode()
             elif action == "module_editor":
                 self.push_screen(ModuleEditorScreen(self.registry, self.module_layout), self._apply_module_layout)
             elif action == "user_memory":
@@ -1464,12 +1476,84 @@ class VideoPlayerApp(App):
         actions.extend(
             [
                 SettingsAction("Video folder", "folder", "Choose where vplay scans for local media."),
+                SettingsAction("Folder mode", "folder_mode", self._folder_mode_description()),
                 SettingsAction("Add ons modules", "module_editor", "Activate, deactivate, move, split, or reset modules."),
                 SettingsAction("User memory", "user_memory", "Edit or reset saved display names and chunks."),
                 SettingsAction("About", "about", "Developer, version, and git update check."),
             ]
         )
         return actions
+
+    def _folder_mode_description(self) -> str:
+        if self.state.settings.video_dir_mode == "cwd":
+            return "Currently using the terminal working folder each time vplay starts."
+        return "Currently using the saved video folder. Toggle to use the terminal working folder instead."
+
+    def _toggle_video_folder_mode(self) -> None:
+        if self.state.settings.video_dir_mode == "cwd":
+            self.state.settings.video_dir_mode = "fixed"
+        else:
+            self.state.settings.video_dir_mode = "cwd"
+        self.video_dir = self._resolve_video_dir()
+        self._save_state()
+        self._load_library()
+        self.filtered_files = list(self.all_files)
+        self._refresh_all()
+        if not self.video_dir.exists():
+            self._open_missing_video_dir()
+
+    def _open_missing_video_dir(self) -> None:
+        if self._folder_prompt_open or self.video_dir.exists():
+            return
+        self._folder_prompt_open = True
+
+        def done(action: str) -> None:
+            self._folder_prompt_open = False
+            if action == "create_default":
+                self._create_and_use_folder(self.video_dir)
+            elif action == "browse":
+                self._open_folder_picker(self.video_dir.parent)
+            elif action == "use_cwd":
+                self.state.settings.video_dir_mode = "cwd"
+                self.video_dir = Path.cwd().resolve()
+                self._save_state()
+                self._refresh_after_folder_change()
+
+        self.push_screen(FolderSetupScreen(str(self.video_dir)), done)
+
+    def _open_folder_picker(self, start: Path) -> None:
+        def done(result: str) -> None:
+            if result.startswith("use:"):
+                self._apply_folder(result[4:])
+            elif result.startswith("new:"):
+                self._ask_new_folder(Path(result[4:]))
+
+        self.push_screen(DirectoryPickerScreen(str(start)), done)
+
+    def _ask_new_folder(self, parent: Path) -> None:
+        def done(name: str) -> None:
+            if not name:
+                self._open_folder_picker(parent)
+                return
+            target = expand_path(name) if name.startswith(("~", "/")) else parent / name
+            self._create_and_use_folder(target)
+
+        self.push_screen(TextInputScreen("New folder", "", placeholder="Videos"), done)
+
+    def _create_and_use_folder(self, path: Path) -> None:
+        try:
+            path.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            self.notify(f"Could not create folder: {exc}", severity="error")
+            self._open_folder_picker(path.parent)
+            return
+        self._apply_folder(str(path))
+
+    def _refresh_after_folder_change(self) -> None:
+        self._load_library()
+        self.filtered_files = list(self.all_files)
+        self.metadata.prefetch(self.filtered_files)
+        self._refresh_all()
 
     def _open_user_memory(self) -> None:
         def done(action: str) -> None:
@@ -1592,7 +1676,7 @@ class VideoPlayerApp(App):
             if action == "check_updates":
                 self._open_updates()
 
-        self.push_screen(AboutScreen(__version__), done)
+        self.push_screen(AboutScreen(__version__, self.config.install_method), done)
 
     def _open_updates(self) -> None:
         status = self.updates.check()
@@ -1651,11 +1735,10 @@ class VideoPlayerApp(App):
         if not path.is_dir():
             self.notify(f"Not a directory: {value}", severity="error")
             return
+        self.state.settings.video_dir_mode = "fixed"
         self.video_dir = path
-        self._load_library()
-        self.filtered_files = list(self.all_files)
         self._save_state()
-        self._refresh_all()
+        self._refresh_after_folder_change()
 
     def _start_download_flow(self) -> None:
         def got_url(url: str) -> None:
@@ -1918,7 +2001,8 @@ class VideoPlayerApp(App):
         return False
 
     def _save_state(self) -> None:
-        self.state.settings.video_dir = self._home_relative(self.video_dir)
+        if self.state.settings.video_dir_mode == "fixed":
+            self.state.settings.video_dir = self._home_relative(self.video_dir)
         self.state.settings.module_layout = self.module_layout.to_dict()
         self.store.save(self.state)
 

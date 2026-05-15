@@ -11,6 +11,7 @@ Chunk = List[float]
 @dataclass
 class Settings:
     video_dir: str = "~/movs"
+    video_dir_mode: str = "fixed"
     volume: int = 10
     muted: bool = False
     screen: str = "auto-external"
@@ -22,6 +23,7 @@ class Settings:
         data = data or {}
         return cls(
             video_dir=str(data.get("video_dir") or default_video_dir),
+            video_dir_mode=_video_dir_mode(data.get("video_dir_mode", "fixed")),
             volume=max(0, min(200, int(data.get("volume", 10)))),
             muted=_bool(data.get("muted", False)),
             screen=str(data.get("screen", "auto-external")),
@@ -32,6 +34,7 @@ class Settings:
     def to_dict(self) -> dict:
         return {
             "video_dir": self.video_dir,
+            "video_dir_mode": self.video_dir_mode,
             "volume": self.volume,
             "muted": self.muted,
             "screen": self.screen,
@@ -142,3 +145,8 @@ def _bool(value: object) -> bool:
 def _loop_mode(value: object) -> str:
     text = str(value)
     return text if text in {"off", "one", "all"} else "off"
+
+
+def _video_dir_mode(value: object) -> str:
+    text = str(value)
+    return text if text in {"fixed", "cwd"} else "fixed"

@@ -14,10 +14,21 @@ class UpdateStatus:
 
 
 class UpdateManager:
-    def __init__(self, project_dir: Path):
+    def __init__(self, project_dir: Path, install_method: str = "source"):
         self.project_dir = project_dir
+        self.install_method = install_method
 
     def check(self) -> UpdateStatus:
+        if self.install_method == "homebrew":
+            return UpdateStatus(
+                "Managed by Homebrew",
+                "This vplay install is managed by Homebrew. Update it from the shell with:\n\nbrew update && brew upgrade vplay",
+            )
+        if self.install_method == "portable":
+            return UpdateStatus(
+                "Portable build",
+                "This vplay install is a portable binary. Download the latest macOS binary from:\n\nhttps://github.com/rztrace/vplay/releases/latest\n\nThen replace this executable.",
+            )
         if not (self.project_dir / ".git").is_dir():
             return UpdateStatus("No update source", "This vplay checkout is not initialized as a git repository.")
         branch = self._git("branch", "--show-current").stdout.strip()
@@ -49,6 +60,13 @@ class UpdateManager:
         return UpdateStatus("Update available", detail, can_install=True)
 
     def install(self) -> UpdateStatus:
+        if self.install_method == "homebrew":
+            return UpdateStatus("Managed by Homebrew", "Run: brew update && brew upgrade vplay")
+        if self.install_method == "portable":
+            return UpdateStatus(
+                "Portable build",
+                "Download the latest macOS binary from https://github.com/rztrace/vplay/releases/latest and replace this executable.",
+            )
         if self._dirty():
             return UpdateStatus("Install blocked", "Working tree has local edits. Commit or stash them before updating.")
         pull = self._git("pull", "--ff-only", check=False)

@@ -16,8 +16,10 @@ def parse_command(raw: str) -> ParsedCommand:
     text = raw.strip().lstrip(":").strip()
     if not text:
         return ParsedCommand("empty")
-    if text in {"w", "q", "fish"}:
+    if text in {"w", "q", "shell"}:
         return ParsedCommand(text)
+    if text == "fish":
+        return ParsedCommand("shell")
     if text.endswith("?"):
         return ParsedCommand("help", text[:-1])
     if text == "status":
@@ -53,4 +55,3 @@ def shell_words(value: str) -> list[str]:
     if not value:
         return []
     return shlex.split(value)
-

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Callable, Optional, Sequence
 
 from textual import events
@@ -253,6 +254,146 @@ class ScreenPickerScreen(ModalScreen[str]):
 
     def action_cancel(self) -> None:
         self.dismiss("")
+
+
+class FolderSetupScreen(ModalScreen[str]):
+    DEFAULT_CSS = """
+    FolderSetupScreen { align: center middle; }
+    #folder-setup-box { width: 76; max-width: 96%; height: auto; padding: 1 2; background: $surface; border: solid $primary; }
+    #folder-setup-title { width: 100%; text-style: bold; color: $accent; margin-bottom: 1; }
+    #folder-setup-detail { width: 100%; color: $text; margin-bottom: 1; }
+    #folder-setup-list { height: auto; background: $surface; }
+    #folder-setup-hint { width: 100%; color: $text-muted; margin-top: 1; }
+    """
+    BINDINGS = [Binding("escape,q", "cancel")]
+
+    def __init__(self, missing_path: str):
+        super().__init__()
+        self._missing_path = missing_path
+
+    def compose(self) -> ComposeResult:
+        yield Vertical(
+            Static("Choose video folder", id="folder-setup-title"),
+            Static(f"  {self._missing_path} does not exist.", id="folder-setup-detail"),
+            ListView(id="folder-setup-list"),
+            Static("Enter select - Esc keep current setting", id="folder-setup-hint"),
+            id="folder-setup-box",
+        )
+
+    def on_mount(self) -> None:
+        view = self.query_one("#folder-setup-list", ListView)
+        choices = (
+            ("Create and use default folder", "create_default"),
+            ("Choose another folder", "browse"),
+            ("Use this terminal folder", "use_cwd"),
+        )
+        for label, action in choices:
+            item = ListItem(Label(f"  {label}"))
+            item.folder_setup_action = action
+            view.append(item)
+        view.index = 0
+        view.focus()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        self.dismiss(getattr(event.item, "folder_setup_action", ""))
+
+    def on_key(self, event: events.Key) -> None:
+        if event.key == "enter":
+            item = self.query_one("#folder-setup-list", ListView).highlighted_child
+            self.dismiss(getattr(item, "folder_setup_action", "") if item else "")
+            event.prevent_default()
+
+    def action_cancel(self) -> None:
+        self.dismiss("")
+
+
+class DirectoryPickerScreen(ModalScreen[str]):
+    DEFAULT_CSS = """
+    DirectoryPickerScreen { align: center middle; }
+    #dir-box { width: 88; max-width: 98%; height: 88%; padding: 1 2; background: $surface; border: solid $primary; }
+    #dir-title { width: 100%; text-style: bold; color: $accent; margin-bottom: 1; }
+    #dir-path { width: 100%; color: $text; margin-bottom: 1; }
+    #dir-list { height: 1fr; background: $surface; }
+    #dir-hint { width: 100%; color: $text-muted; margin-top: 1; }
+    """
+    BINDINGS = [Binding("escape,q", "cancel")]
+
+    def __init__(self, start: str):
+        super().__init__()
+        self._current = Path(start).expanduser()
+
+    def compose(self) -> ComposeResult:
+        yield Vertical(
+            Static("Folder browser", id="dir-title"),
+            Static("", id="dir-path"),
+            ListView(id="dir-list"),
+            Static("Enter open - u use folder - n new folder - h/backspace parent - ~ home - Esc cancel", id="dir-hint"),
+            id="dir-box",
+        )
+
+    def on_mount(self) -> None:
+        self._refresh()
+
+    def on_key(self, event: events.Key) -> None:
+        key = event.key
+        if key == "enter":
+            item = self.query_one("#dir-list", ListView).highlighted_child
+            action = getattr(item, "dir_action", "") if item else ""
+            path = getattr(item, "dir_path", "") if item else ""
+            if action == "open" and path:
+                self._current = Path(path)
+                self._refresh()
+            elif action == "use" and path:
+                self.dismiss(f"use:{path}")
+            event.prevent_default()
+        elif key == "u":
+            self.dismiss(f"use:{self._current}")
+            event.prevent_default()
+        elif key == "n":
+            self.dismiss(f"new:{self._current}")
+            event.prevent_default()
+        elif key in {"h", "backspace", "delete"}:
+            self._current = self._current.parent
+            self._refresh()
+            event.prevent_default()
+        elif key == "home" or getattr(event, "character", "") == "~":
+            self._current = Path.home()
+            self._refresh()
+            event.prevent_default()
+
+    def on_list_view_selected(self, event: ListView.Selected) -> None:
+        action = getattr(event.item, "dir_action", "")
+        path = getattr(event.item, "dir_path", "")
+        if action == "open" and path:
+            self._current = Path(path)
+            self._refresh()
+        elif action == "use" and path:
+            self.dismiss(f"use:{path}")
+
+    def action_cancel(self) -> None:
+        self.dismiss("")
+
+    def _refresh(self) -> None:
+        if not self._current.exists():
+            self._current = self._current.parent
+        self._current = self._current.resolve()
+        self.query_one("#dir-path", Static).update(f"  {self._current}")
+        view = self.query_one("#dir-list", ListView)
+        view.clear()
+        rows = [("Use this folder", "use", self._current), ("..", "open", self._current.parent)]
+        try:
+            dirs = sorted((path for path in self._current.iterdir() if path.is_dir()), key=lambda item: item.name.lower())
+        except OSError:
+            dirs = []
+        rows.extend((path.name, "open", path) for path in dirs)
+        for label, action, path in rows:
+            prefix = "[use]" if action == "use" else "[dir]"
+            item = ListItem(Label(f"  {prefix:<5} {label}"))
+            item.dir_action = action
+            item.dir_path = str(path)
+            view.append(item)
+        view.index = 0
+        view.focus()
 
 
 class SettingsScreen(ModalScreen[str]):
@@ -638,12 +779,13 @@ class AboutScreen(ModalScreen[str]):
     """
     BINDINGS = [Binding("escape,q", "cancel")]
 
-    def __init__(self, version: str):
+    def __init__(self, version: str, install_method: str = "source"):
         super().__init__()
         self._version = version
+        self._install_method = install_method
 
     def compose(self) -> ComposeResult:
-        text = f"  Developer: Raz\n  Version: {self._version}"
+        text = f"  Developer: Raz\n  Version: {self._version}\n  Install: {self._install_method}"
         yield Vertical(
             Static("About vplay", id="about-title"),
             Static(text, id="about-text"),

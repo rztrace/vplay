@@ -38,8 +38,6 @@ class StateStore:
     def load(self) -> AppState:
         default_video_dir = str(self.config.default_video_dir).replace(str(Path.home()), "~")
         data = read_json(self.config.state_file)
-        if not data and self.config.legacy_state_file.exists():
-            data = read_json(self.config.legacy_state_file)
         return AppState.from_dict(data, default_video_dir)
 
     def save(self, state: AppState) -> None:
