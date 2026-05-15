@@ -1,7 +1,7 @@
 # vplay
 
 <p align="center">
-  <img src="assets/logo-512.png" width="160" alt="vplay logo">
+  <img src="assets/vplay.jpg" width="160" alt="vplay logo">
 </p>
 
 `vplay` is an advanced CLI video player with a TUI interface for macOS.
