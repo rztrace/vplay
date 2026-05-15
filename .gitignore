@@ -6,4 +6,3 @@ build/
 dist/
 *.spec
 .DS_Store
-AGENTS.md
