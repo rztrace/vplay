@@ -31,7 +31,7 @@ It is lightweight, terminal-native, and built around add-ons and modules that ca
 ## Install With Homebrew
 
 ```sh
-brew tap rztrace/vplay https://github.com/rztrace/homebrew-vplay
+brew tap rztrace/vplay https://github.com/rztrace/vplay
 brew install vplay
 ```
 
