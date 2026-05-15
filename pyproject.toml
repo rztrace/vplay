@@ -1,0 +1,16 @@
+[project]
+name = "vplay"
+version = "1.1.0b0"
+description = "Modular Textual/mpv playlist player derived from the fish vplay helper."
+requires-python = ">=3.9"
+dependencies = ["textual>=0.50"]
+
+[project.scripts]
+vplay = "vplay.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["vplay*"]
+exclude = ["docs*", "fish*", "mpv*"]
+
+[tool.setuptools.package-data]
+vplay = ["mpv/*.lua"]
