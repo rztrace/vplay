@@ -1,13 +1,13 @@
 class Vplay < Formula
   desc "Advanced macOS CLI video player with a TUI interface"
   homepage "https://github.com/rztrace/vplay"
-  version "1.1-beta.2"
+  version "1.1-beta.3"
   license :cannot_represent
 
   on_macos do
     if Hardware::CPU.arm?
-      url "https://github.com/rztrace/vplay/releases/download/v1.1-beta.2/vplay-macos-arm64.tar.gz"
-      sha256 "ff09282e03f1d0407cc0100b1ec6ed80e0a1e0ce9e35195dfcdde04a7dd02859"
+      url "https://github.com/rztrace/vplay/releases/download/v1.1-beta.3/vplay-macos-arm64.tar.gz"
+      sha256 "dce1e3c28880defc3601dbc2edabb60dec1c67a819a4b11a864afc1035bf14dd"
     else
       odie "vplay currently provides a precompiled macOS binary for Apple Silicon."
     end
@@ -27,6 +27,6 @@ class Vplay < Formula
   end
 
   test do
-    assert_match "vplay 1.1 beta 2", shell_output("#{bin}/vplay --version")
+    assert_match "vplay 1.1 beta 3", shell_output("#{bin}/vplay --version")
   end
 end

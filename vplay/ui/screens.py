@@ -106,15 +106,19 @@ class HelpScreen(ModalScreen[None]):
     """
     BINDINGS = [Binding("escape,q,question_mark,enter", "close")]
 
-    def __init__(self, theme: dict):
+    def __init__(self, theme: dict, version: str = "", build: str = ""):
         super().__init__()
         self._theme = theme
+        self._version = version
+        self._build = build
 
     def compose(self) -> ComposeResult:
         t = self._theme
         k, f, d = t["accent"], t["fg"], t["dim"]
+        build = f" build {self._build}" if self._build else ""
+        version = f" [{d}]{self._version}{build}[/{d}]" if self._version else ""
         text = f"""\
-[bold {k}]vplay[/bold {k}]
+[bold {k}]vplay[/bold {k}]{version}
 
 [bold {f}]Library[/bold {f}]
   [{k}]Space[/{k}] play file    [{k}]a[/{k}] add to playlist    [{k}]r[/{k}] rename display name
@@ -779,13 +783,21 @@ class AboutScreen(ModalScreen[str]):
     """
     BINDINGS = [Binding("escape,q", "cancel")]
 
-    def __init__(self, version: str, install_method: str = "source"):
+    def __init__(self, version: str, build: str, release: str, install_method: str = "source"):
         super().__init__()
         self._version = version
+        self._build = build
+        self._release = release
         self._install_method = install_method
 
     def compose(self) -> ComposeResult:
-        text = f"  Developer: Raz\n  Version: {self._version}\n  Install: {self._install_method}"
+        text = (
+            f"  Developer: Raz\n"
+            f"  Version: {self._version}\n"
+            f"  Build: {self._build}\n"
+            f"  Release: {self._release}\n"
+            f"  Install: {self._install_method}"
+        )
         yield Vertical(
             Static("About vplay", id="about-title"),
             Static(text, id="about-text"),

@@ -16,7 +16,7 @@ try:
 except ImportError as exc:  # pragma: no cover
     raise SystemExit("Textual is required. Install with: python -m pip install textual") from exc
 
-from . import __version__
+from . import __build__, __release__, __version__
 from .commands import parse_command, parse_timestamp
 from .config import DEFAULT_THEME, THEMES, AppConfig, expand_path
 from .downloads import DownloadManager, resolve_title
@@ -931,7 +931,7 @@ class VideoPlayerApp(App):
             event.prevent_default()
             return
         if key in ("question_mark", "shift+slash"):
-            self.push_screen(HelpScreen(self._theme()))
+            self.push_screen(HelpScreen(self._theme(), __version__, __build__))
             event.prevent_default()
             return
         if key == "slash":
@@ -1676,7 +1676,7 @@ class VideoPlayerApp(App):
             if action == "check_updates":
                 self._open_updates()
 
-        self.push_screen(AboutScreen(__version__, self.config.install_method), done)
+        self.push_screen(AboutScreen(__version__, __build__, __release__, self.config.install_method), done)
 
     def _open_updates(self) -> None:
         status = self.updates.check()
