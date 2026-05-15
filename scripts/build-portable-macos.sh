@@ -24,6 +24,7 @@ rm -rf "$root/build" "$root/dist"
   --clean \
   --onefile \
   --name vplay \
+  --collect-submodules vplay.modules \
   --add-data "$root/vplay/mpv/vplay.lua:vplay/mpv" \
   "$root/packaging/portable/launcher.py"
 
