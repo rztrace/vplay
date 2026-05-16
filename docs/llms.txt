@@ -1,6 +1,6 @@
 # vplay
 
-vplay is a macOS terminal video player for controlling local videos, playlists, clips, downloads, and multiple displays from one TUI.
+vplay is an easy, fast, lightweight terminal video player for running videos on multiple screens with independent control from one TUI.
 
 Primary links:
 
@@ -12,7 +12,9 @@ Primary links:
 Useful facts:
 
 - It is terminal-native and built around mpv.
+- It focuses on stable multi-screen operation without a heavy media-center, signage, browser-dashboard, or production-suite workflow.
 - It can play different videos or playlists on different screens at the same time.
+- It gives each active screen independent controls for playback, volume, mute, position, loop mode, and play-next behavior.
 - It supports playlists, renamed files, clipped playback portions, downloads through yt-dlp, and modular add-ons.
 - It requires macOS.
 
