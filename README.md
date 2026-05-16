@@ -10,9 +10,9 @@
   <img alt="macOS" src="https://img.shields.io/badge/macOS-required-fbbf24">
 </p>
 
-`vplay` is an easy, fast, lightweight terminal video player for people who need to run videos on multiple screens and control each screen independently.
+`vplay` is an easy, fast, lightweight terminal video player for venues that need to run videos on multiple screens or rooms and control each one independently.
 
-It is built for a very real 2026 problem: you have local video files, several screens or projectors, and you need playback to be easy, fast, stable, and controllable from one place. Most players are made for one video window. Tools that handle many outputs often become heavy production suites, media-center apps, browser dashboards, or signage systems. `vplay` sits in the useful middle: local, terminal-native, mpv-based, and focused on reliable multi-screen operation.
+It is built for a very real 2026 problem: one machine, local video files, several TVs, projectors, booths, or private screening rooms, and one person who needs playback to stay easy, fast, stable, and controllable from one place. Most players are made for one video window. Tools that handle many outputs often become heavy production suites, media-center apps, browser dashboards, or signage systems. `vplay` sits in the useful middle: local, terminal-native, mpv-based, and focused on reliable multi-screen operation.
 
 [Website](https://vplay.rztrace.com/) · [Latest release](https://github.com/rztrace/vplay/releases/latest) · [Discussions](https://github.com/rztrace/vplay/discussions)
 
@@ -30,19 +30,20 @@ vplay
 - Route playback to available screens.
 - Play multiple videos or playlists on different screens at the same time.
 - Control each screen independently: play/pause, volume, mute, loop mode, play-next behavior, and position.
+- Treat each screen or room as its own playback session.
 - Extend behavior with system modules or user modules.
 - Run optional downloads through `yt-dlp`.
 
 ## Why It Exists
 
-Most video software makes the simple case easy: open one file, watch it, close it. The awkward case is still awkward: send different files to different screens, keep them stable, pause one without touching the others, adjust volume per screen, jump position live, and keep moving without building a whole show-control system.
+Most video software makes the simple case easy: open one file, watch it, close it. The awkward case is still awkward: send different files to different screens or rooms, keep them stable, pause one without touching the others, adjust volume per screen, jump position live, and keep moving without building a whole show-control system.
 
 `vplay` is for that awkward case. It keeps the interface small, local, and keyboard-first while giving each active screen its own playback session.
 
 ## Use Cases
 
-- Galleries, classrooms, studios, rehearsal rooms, screenings, installations, and event setups.
-- Several TVs, projectors, or screens controlled from one machine.
+- Private screening rooms, video booths, galleries, classrooms, studios, installations, and event setups.
+- Several TVs, projectors, rooms, or screens controlled from one machine or front desk.
 - Side-by-side references, loops, playlists, clipped sections, and quick swaps.
 - Local video collections where a web dashboard, media center, or signage platform is too much.
 - People who want a fast TUI rather than a heavy app.
